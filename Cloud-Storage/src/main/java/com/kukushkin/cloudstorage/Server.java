@@ -7,9 +7,8 @@ import java.util.concurrent.Executors;
 public class Server {
     // TODO: 14.06.2021
     // организовать корректный вывод статуса
-
-    // подумать почему так реализован цикл в ClientHandler -
-    // ОТВЕТ - возможно, чтобы считать количество прочитанных байтов относительно размера буфера? //
+    // подумать почему так реализован цикл в ClientHandler - ОТВЕТ - возможно, чтобы считать количество
+    // прочитанных байтов относительно размера буфера? //
 
     public Server() {
         ExecutorService service = Executors.newFixedThreadPool(4);

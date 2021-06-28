@@ -27,11 +27,7 @@ public class Client extends JFrame {
             // upload 1.txt
             // download img.png
             String[] cmd = textField.getText().split(" ");
-            if ("upload".equals(cmd[0])) {
-                sendFile(cmd[1]);
-            } else if ("download".equals(cmd[0])) {
-                getFile(cmd[1]);
-            }
+            mainAction(cmd);
         });
 
         panel.add(textField);
@@ -51,37 +47,48 @@ public class Client extends JFrame {
 
     }
 
+    private void mainAction(String[] cmd) {
+        if ("upload".equals(cmd[0])) {
+            sendFile(cmd[1]);
+        } else if ("download".equals(cmd[0])) {
+            getFile(cmd[1]);
+        }
+    }
+
     private void getFile(String filename) {
         // TODO: 14.06.2021
         try {
-            File file = new File("server" + File.separator + filename);
-            if (!file.exists()) {
-                throw new FileNotFoundException();
-            }
-
-            long fileLength = file.length();
-            FileOutputStream fos = new FileOutputStream(file);
-
             out.writeUTF("download");
             out.writeUTF(filename);
-            out.writeLong(fileLength);
 
-            int read = 0;
-            byte[] buffer = new byte[8 * 1024];
-            while ((read = fos.write(buffer)) != -1) {
-                out.write(buffer, 0, read);
+            File file = new File("client" + File.separator + filename);
+
+            if (!file.exists()){
+                file.createNewFile();
             }
 
-            out.flush();
+            FileOutputStream fos = new FileOutputStream(file);
+            long size = in.readLong();
+            byte[] buffer = new byte[8 * 1024];
 
-            String status = in.readUTF();
-            System.out.println("sending status: " + status);
+            for (int i = 0; i < (size + (buffer.length-1))/buffer.length; i++) {
+                int read = in.read(buffer);
+                fos.write(buffer, 0, read);
+            }
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            fos.close();
+
+            out.writeUTF("OK");
         } catch (IOException e) {
+            try {
+                out.writeUTF("WRONG");
+            }catch (IOException ex){
+                ex.printStackTrace();
+            }
+            System.err.println("Downloading error");
             e.printStackTrace();
         }
+
     }
 
     private void sendFile(String filename) {
